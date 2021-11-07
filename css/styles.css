@@ -15,7 +15,7 @@ body {
     border-radius: 10px;
     box-shadow: 12px 12px 20px #bfafb2,
         -12px -12px 20px #fff;
-    background-color: #f3f058;
+    background-color: #ff7c10;
 }
 
 .display #screen{
@@ -52,5 +52,5 @@ body {
     margin: .3rem;
     border-radius: .25rem;
     box-shadow: 5px 5px 8px #000,
-                -5px -5px 8px #fff;
+                -5px -5px 8px rgb(70, 67, 67);
 }

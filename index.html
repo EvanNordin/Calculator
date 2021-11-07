@@ -1,3 +1,9 @@
+<!-- // Language: javascript/html
+// Path: Algorithms.js 
+UI created by following some ideas from https://www.youtube.com/watch?v=LgryqYxSCNk&t=601s
+Implements shunting yard algorithm that has a description here https://en.wikipedia.org/wiki/Shunting-yard_algorithm 
+
+Known bug: Decimal addition must be done in in the following format 3 + 0.5 not 3 + .5. Otherwise Nan is returned-->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -8,17 +14,17 @@
     <title>Lab 3 | Calculator</title>
 </head>
 <body>
+    <!-- calculator container -->
     <div class="container">
         <div class="display">
             <input type="text" id="screen" placeholder="0">
-
+            <!-- container that holds the calculator's keypad buttons -->
             <div class="btn-container">
+                <!-- Each row element holds a few buttons -->
                 <div class="row">
                     <button class="btn">Clear Entry</button>
-                    <button class="btn">x!</button>
                     <button class="btn">(</button>
                     <button class="btn">)</button>
-                    <button class="btn">%</button>
                     <button class="btn">Clear All</button>
                 </div>
                 <div class="row">
@@ -27,7 +33,7 @@
                     <button class="btn">7</button>
                     <button class="btn">8</button>
                     <button class="btn">9</button>
-                    <button class="btn">&div;</button>
+                    <button class="btn">/</button>
                 </div>
                 <div class="row">
                     <button class="btn">COS</button>
@@ -46,7 +52,7 @@
                     <button class="btn">-</button>
                 </div>
                 <div class="row">
-                    <button class="btn">&Sqrt;</button>
+                    <button class="btn">SQRT</button>
                     <button class="btn">x<sup>y</sup></button>
                     <button class="btn">0</button>
                     <button class="btn">.</button>
@@ -65,22 +71,220 @@
     </div>
 </body>
 <script>
-    let calcScreen = document.querySelector('#screen')
-    let button = document.querySelectorAll('.btn')
+    // Operators and theri precedence are defined in the following object
+    const operators = {
+    '+': 1,
+    '-': 1,
+    '*': 2,
+    '/': 2,
+    '^': 3,
+    'n': 4,
+    '.': 4
+    };
 
-    for(eachButton of button){
-        eachButton.addEventListener('click', (event) => {
-            buttonText = event.target.innerText;
-            calcScreen.value += buttonText;
+    //Function that evaluates a postfix expression.
+    const evaluatePostfix = (postfix) => {
+    const stack = [];
+    for (let i = 0; i < postfix.length; i += 1) {
+    const char = postfix[i];
+    if (char === ' ') {
+        continue;
+    }
+    if (char in operators) {
+        const a = stack.pop();
+        const b = stack.pop();
+        console.log(`a: ${a} b: ${b}`);
+        switch (char) {
+        case '+':
+            stack.push(a + b);
+            break;
+        case '-':
+            stack.push(b - a)
+            break;
+        case '*':
+            stack.push(a * b)
+            break;
+        case '/':
+            stack.push(b / a)
+            break;
+        case '^':
+            stack.push(Math.pow(b, a));
+            break;
+        case 'n':
+            stack.push(-a);
+            break
+        case '.':
+            stack.push(Number(`.${a}`))
+            break;
+        }
+    } else {
+        stack.push(Number(char));
+    }
+    }
+    return stack.pop();
+    }
 
-            if (buttonText === 'Clear All'){
-                calcScreen.value = '';
+
+    const infixToPostfix = (infix) => {
+    let stack = [];
+    let outputExpression = [];
+
+    for (let i = 0; i < infix.length; i += 1) {
+        const char = infix[i];
+        if (char === ' ') {
+            continue;
+        }
+        if (char === '(') {
+            stack.push(char);
+        } 
+        else if (char === ')') {
+            while (stack.length > 0 && stack[stack.length - 1] !== '(') {
+                outputExpression.push(stack.pop());
             }
-            if(buttonText === '='){
-                equationString = calcScreen.value;
-                
+            if(stack[stack.length - 1] !== '(') {
+                return 'Invalid Expression';
             }
-        } )
+            else{
+                stack.pop();
+            }
+        } 
+        else if (char in operators) {
+
+            if(char === '-' && infix[i-1] !== /[0-9]/ && infix[i-1] !== '-' && infix[i-1] !== ')'){
+            stack.push('n')
+            continue
+            }
+            while (stack.length > 0 && operators[stack[stack.length - 1]] >= operators[char]) {
+            outputExpression.push(stack.pop());
+            }
+            stack.push(char);
+            console.log(`Stack so far: ${stack}`);
+        } 
+        else {
+            outputExpression.push(char);
+            console.log(`outputExpression so far: ${outputExpression}`);
+        }
+        }
+        while (stack.length > 0) {
+        if (stack[stack.length - 1] === '(' || stack[stack[0] === ')']) {
+            outputExpression = 'Invalid Expression'
+            return outputExpression;
+        }
+        outputExpression.push(stack.pop());
+        }
+        console.log(`Final output expression: ${outputExpression}`)
+        return outputExpression.join('');
+        }
+
+        let calcScreen = document.querySelector('#screen')
+        let button = document.querySelectorAll('.btn')
+
+        //regular expression to check if - is the first character
+        let regex = /\(-/
+
+        for(eachButton of button){
+            eachButton.addEventListener('click', (event) => {
+                buttonText = event.target.innerText;
+
+                if(buttonText !== "SIN" || buttonText !== "COS" || buttonText !== "ARCSIN" || buttonText !== "ARCCOS" || buttonText !== "TAN" || buttonText !== "ARCTAN" || buttonText !== "COT" || buttonText !== "ARCCTG" || buttonText !== "Log<sub>10</sub>" || buttonText !== "LN" || buttonText !== "x<sup>y</sup>" || buttonText !== "SQRT"){
+                    
+                    if(buttonText === "+" || buttonText === "-" || buttonText === "/" || buttonText === '0' || buttonText === '1' || buttonText === '2' || buttonText === '3' || buttonText === '4' || buttonText === '5' || buttonText === '6' || buttonText === '7' || buttonText === '8' || buttonText === '9' || buttonText === '.' || buttonText === '(' || buttonText === ')'){
+                        calcScreen.value += buttonText;
+                    }
+
+                    if(buttonText === 'Clear All'){
+                        calcScreen.value = '';
+                    }
+                    if(buttonText === 'Clear Entry'){
+                        calcScreen.value = calcScreen.value.slice(0, -12);
+                    }
+                    if(buttonText === 'x'){
+                        calcScreen.value += '*';
+                    }
+                    if(buttonText === 'xy'){
+                        calcScreen.value += '^';
+                    }
+                    if(buttonText === 'SIN'){
+                        postfix = infixToPostfix(calcScreen.value);
+                        evaluated = evaluatePostfix(postfix);
+                        result = Math.sin(evaluated);
+                        calcScreen.value = result;
+                    }
+                    if(buttonText === 'COS'){
+                        postfix = infixToPostfix(calcScreen.value);
+                        evaluated = evaluatePostfix(postfix);
+                        result = Math.cos(evaluated);
+                        calcScreen.value = result;
+                    }
+                    if(buttonText === 'TAN'){
+                        postfix = infixToPostfix(calcScreen.value);
+                        evaluated = evaluatePostfix(postfix);
+                        result = Math.tan(evaluated);
+                        calcScreen.value = result;
+                    }
+                    if(buttonText === 'SQRT'){
+                        postfix = infixToPostfix(calcScreen.value);
+                        evaluated = evaluatePostfix(postfix);
+                        result = Math.sqrt(evaluated);
+                        calcScreen.value = result;
+                    }
+                    if(buttonText === 'ARCSIN'){
+                        postfix = infixToPostfix(calcScreen.value);
+                        evaluated = evaluatePostfix(postfix);
+                        result = Math.asin(evaluated);
+                        calcScreen.value = result;
+                    }
+                    if(buttonText === 'ARCCOS'){
+                        postfix = infixToPostfix(calcScreen.value);
+                        evaluated = evaluatePostfix(postfix);
+                        result = Math.acos(evaluated);
+                        calcScreen.value = result;
+                    }
+                    if(buttonText === 'ARCTAN'){
+                        postfix = infixToPostfix(calcScreen.value);
+                        evaluated = evaluatePostfix(postfix);
+                        result = Math.atan(evaluated);
+                        calcScreen.value = result;
+                    }
+                    if(buttonText === 'COT'){
+                        postfix = infixToPostfix(calcScreen.value);
+                        evaluated = evaluatePostfix(postfix);
+                        result = 1/Math.tan(evaluated);
+                        calcScreen.value = result;
+                    }
+                    if(buttonText === 'ARCCTG'){
+                        postfix = infixToPostfix(calcScreen.value);
+                        evaluated = evaluatePostfix(postfix);
+                        result = (Math.PI/2) - Math.atan(evaluated);
+                        calcScreen.value = result;
+                    }
+                    if(buttonText === 'LOG10'){
+                        postfix = infixToPostfix(calcScreen.value);
+                        evaluated = evaluatePostfix(postfix);
+                        result = Math.log10(evaluated);
+                        calcScreen.value = result;
+                    }
+                    if(buttonText === 'LN'){
+                        postfix = infixToPostfix(calcScreen.value);
+                        evaluated = evaluatePostfix(postfix);
+                        result = Math.LN10(evaluated);
+                        calcScreen.value = result;
+                    }
+                    if(buttonText === '='){
+                        equationString = calcScreen.value;
+                        postfix = infixToPostfix(equationString)
+                        if(postfix === 'Invalid Expression'){
+                            calcScreen.value = 'Invalid Expression'
+                        }
+                        else{
+                            calcScreen.value = evaluatePostfix(postfix)
+                        }
+                    }
+                    //forcing user to enter a number before a decimal point
+                    calcScreen.value = calcScreen.value.replace(regex, '-(');
+                    calcScreen.value = calcScreen.value.replace(/--/g, '+');
+                }
+            } )
     }
 </script>
 </html>
