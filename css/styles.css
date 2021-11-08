@@ -9,8 +9,8 @@ body {
 }
 
 .container {
-    width: 30%;
-    height: 40vh;
+    width:40%;
+    height: 45vh;
     padding: .75em;
     border-radius: 10px;
     box-shadow: 12px 12px 20px #bfafb2,
