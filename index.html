@@ -4,6 +4,8 @@ UI created by following some ideas from https://www.youtube.com/watch?v=LgryqYxS
 Implements shunting yard algorithm that has a description here https://en.wikipedia.org/wiki/Shunting-yard_algorithm 
 
 Known bug: Decimal addition must be done in in the following format 3 + 0.5 not 3 + .5. Otherwise Nan is returned-->
+
+<!-- All Bugs fixed! -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -84,48 +86,62 @@ Known bug: Decimal addition must be done in in the following format 3 + 0.5 not 
 
     //Function that evaluates a postfix expression.
     const evaluatePostfix = (postfix) => {
+    tokenString = postfix.toString();
+    //tokenize the postfix expression, with delimiter ,
+    const tokens = tokenString.split(',');
+    console.log(`Tokens: ${tokens}`);
     const stack = [];
-    for (let i = 0; i < postfix.length; i += 1) {
-    const char = postfix[i];
-    if (char === ' ') {
-        continue;
-    }
-    if (char in operators) {
-        const a = stack.pop();
-        const b = stack.pop();
-        console.log(`a: ${a} b: ${b}`);
-        switch (char) {
-        case '+':
-            stack.push(a + b);
-            break;
-        case '-':
-            stack.push(b - a)
-            break;
-        case '*':
-            stack.push(a * b)
-            break;
-        case '/':
-            stack.push(b / a)
-            break;
-        case '^':
-            stack.push(Math.pow(b, a));
-            break;
-        case 'n':
-            stack.push(-a);
-            break
-        case '.':
-            stack.push(Number(`.${a}`))
-            break;
+    for (let i = 0; i < tokens.length; i += 1) {
+        console.log(`Stack so far: ${stack}`);
+        console.log(`Type of data on stack: ${typeof stack[stack.length - 1]}`);
+        let token = tokens[i].toString();
+        token = token.trim();
+        console.log(`Token: ${token}, data type: ${typeof(token)}`);
+        if (token === ' ') {
+            continue;
         }
-    } else {
-        stack.push(Number(char));
-    }
+        if (token in operators) {
+            console.log(`Token is an operator`);
+            const a = stack.pop();
+            const b = stack.pop();
+            console.log(`a: ${a} b: ${b}`);
+            switch (token) {
+            case '+':
+                stack.push(a + b);
+                break;
+            case '-':
+                stack.push(b - a)
+                break;
+            case '*':
+                stack.push(a * b)
+                break;
+            case '/':
+                stack.push(b / a)
+                break;
+            case '^':
+                stack.push(Math.pow(b, a));
+                break;
+            case 'n':
+                stack.push(-a);
+                break
+            case '.':
+                stack.push(Number(`.${a}`))
+                break;
+            }
+        } else {
+            stack.push(Number(token));
+        }
     }
     return stack.pop();
     }
 
 
     const infixToPostfix = (infix) => {
+
+    //regex to match any digit
+    const digitRegex = /\d/;
+    let testString = '3'
+    console.log(digitRegex.test(testString))
     let stack = [];
     let outputExpression = [];
 
@@ -161,8 +177,21 @@ Known bug: Decimal addition must be done in in the following format 3 + 0.5 not 
             console.log(`Stack so far: ${stack}`);
         } 
         else {
-            outputExpression.push(char);
-            console.log(`outputExpression so far: ${outputExpression}`);
+            let j = i
+            let number = ''
+            // console.log(`Char: ${char}`);
+            // console.log(`infix j: ${infix[j]}`)
+            if(digitRegex.test(infix[j])){
+                // console.log('Entered if')
+                while(digitRegex.test(infix[j])){
+                    number += infix[j]
+                    j++
+                }
+                i = j - 1
+            }
+            // console.log(`Number: ${number}`);
+            outputExpression.push(number);
+            // console.log(`outputExpression so far: ${outputExpression}`);
         }
         }
         while (stack.length > 0) {
@@ -170,10 +199,10 @@ Known bug: Decimal addition must be done in in the following format 3 + 0.5 not 
             outputExpression = 'Invalid Expression'
             return outputExpression;
         }
-        outputExpression.push(stack.pop());
+        outputExpression.push(stack.pop() + ' ');
         }
         console.log(`Final output expression: ${outputExpression}`)
-        return outputExpression.join('');
+        return outputExpression
         }
 
         let calcScreen = document.querySelector('#screen')
@@ -277,12 +306,14 @@ Known bug: Decimal addition must be done in in the following format 3 + 0.5 not 
                             calcScreen.value = 'Invalid Expression'
                         }
                         else{
+                            console.log(`Postfix: ${postfix}`)
                             calcScreen.value = evaluatePostfix(postfix)
                         }
                     }
                     //forcing user to enter a number before a decimal point
                     calcScreen.value = calcScreen.value.replace(regex, '-(');
                     calcScreen.value = calcScreen.value.replace(/--/g, '+');
+
                 }
             } )
     }
